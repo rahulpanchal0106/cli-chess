@@ -114,7 +114,7 @@ public:
             start_piece=empty;
 
         }else{
-            cout<<"*****************"<<endl;
+            // cout<<"*****************"<<endl;
         }
     }
 
@@ -242,8 +242,8 @@ int main(){
 
         system("cls");
 
-        cout<<"from: "<<positions[0][0]<<" "<<positions[0][1]<<endl;
-        cout<<"to: "<<positions[1][0]<<" "<<positions[1][1]<<endl;
+        // cout<<"from: "<<positions[0][0]<<" "<<positions[0][1]<<endl;
+        // cout<<"to: "<<positions[1][0]<<" "<<positions[1][1]<<endl;
 
         player.make_move(board,positions,p1_collec,p2_collec);
         display.update(board,p1_collec,p2_collec);
