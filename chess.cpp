@@ -5,12 +5,14 @@
 #include<locale>
 using namespace std;
 
-class Display{
-    //show pieces and board
-public:
-    void init(vector<vector<int>> &board){
+#define empty 0
 
-        unordered_map <int,char> pieces_map={
+class Pieces{
+    //pieces logic
+
+public:
+
+    unordered_map <int,char> pieces_map={
             {0,'.'},
             {1,'R'},
             {2,'N'},
@@ -25,7 +27,27 @@ public:
             {-5,'q'},
             {-6,'p'},
         };
+
+};
+
+class Display{
+    //show pieces and board
+public:
+    Pieces pieces;
+    unordered_map<int,char> pieces_map=pieces.pieces_map;
+
+    void init(
+            vector<vector<int>> &board,
+            vector<int> &p1_collec, 
+            vector<int> &p2_collec 
+        ){
+
         
+        cout<<"==> Player2: ";
+        for(int piece:p2_collec){
+            cout<<pieces_map[piece]<<" ";
+        }
+        cout<<endl;
 
         cout<<endl;
         for(int i=0; i<board.size(); i++){
@@ -41,11 +63,21 @@ public:
         }
         cout<<endl;
         cout<<endl;
+
+         cout<<"==> Player1: ";
+        for(int piece:p1_collec){
+            cout<<pieces_map[piece]<<" ";
+        }
+        cout<<endl;
+        cout<<endl;
     }
 
-    void update(vector<vector<int>> &board){
-        
-        init(board);
+    void update(
+            vector<vector<int>> &board,
+            vector<int> &p1_collec, 
+            vector<int> &p2_collec 
+        ){
+        init(board,p1_collec,p2_collec);
     }
 
 };
@@ -59,10 +91,53 @@ public:
         b=temp;
     }
 
-    void make_move(vector<vector<int>> &board, vector<vector<int>> &positions){
+    void kill_piece(
+            int &start_piece, 
+            int &end_piece, 
+            vector<vector<int>> &board, 
+            vector<int> &p1_collec, 
+            vector<int> &p2_collec
+        ){
+        
+        if(start_piece>0 && end_piece<0){
+            
+            //white p1 kills
+            p1_collec.push_back(end_piece);
+            end_piece=start_piece;
+            start_piece=empty;
+
+        }else if(start_piece<0 && end_piece>0){
+
+            //black p2 kills
+            p2_collec.push_back(end_piece);
+            end_piece=start_piece;
+            start_piece=empty;
+
+        }else{
+            cout<<"*****************"<<endl;
+        }
+    }
+
+    void make_move(
+            vector<vector<int>> &board, 
+            vector<vector<int>> &positions,
+            vector<int> &p1_collec, 
+            vector<int> &p2_collec
+        ){
         int x1=positions[0][0], x2=positions[1][0];
         int y1=positions[0][1], y2=positions[1][1];
-        swap(board[x1][y1],board[x2][y2]);
+
+        int start_piece = board[x1][y1];
+        int end_piece = board[x2][y2];
+
+        if(end_piece==empty){
+            swap(board[x1][y1],board[x2][y2]);
+            return;
+        }
+
+        kill_piece(board[x1][y1],board[x2][y2],board,p1_collec,p2_collec);
+
+
     }
 
 };
@@ -70,10 +145,23 @@ public:
 class Game{
     // init, stop, restart, overall game flow
 public:
+    
     Display display;
-    void init(vector<vector<int>> &board){
-        display.init(board);
+    Pieces pieces;
+
+    unordered_map <int,char> pieces_map = pieces.pieces_map;
+    
+    void init(
+        vector<vector<int>> &board,
+        vector<int> &p1_collec, 
+        vector<int> &p2_collec 
+        
+    ){      
+       
+        display.init(board,p1_collec,p2_collec);
+       
     }
+
     vector<vector<int>> update(vector<vector<int>> &board){
 
     }
@@ -115,12 +203,6 @@ public:
 
 };
 
-class Pieces{
-    //pieces logic
-
-
-
-};
 
 
 
@@ -145,21 +227,26 @@ int main(){
         {6,6,6,6,6,6,6,6},
         {1,2,3,4,5,3,2,1},
     };
-
+    
+    vector<int> p1_collec={}; 
+    vector<int> p2_collec={};
     
 
-    game.init(board);
+    system("cls");
+    game.init(board,p1_collec,p2_collec);
 
     while(start){
         cout<<"Player "<<((turns%2==0)?"1":"2")<<"'s turn: ";
         cin>>move;
         vector<vector<int>> positions = game.move_decoder(move);
+
         system("cls");
+
         cout<<"from: "<<positions[0][0]<<" "<<positions[0][1]<<endl;
         cout<<"to: "<<positions[1][0]<<" "<<positions[1][1]<<endl;
 
-        player.make_move(board,positions);
-        display.update(board);
+        player.make_move(board,positions,p1_collec,p2_collec);
+        display.update(board,p1_collec,p2_collec);
         
 
         turns++;
