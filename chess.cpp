@@ -13,77 +13,47 @@ class Pieces{
 public:
 
     unordered_map <int,char> pieces_map={
-            {0,'.'},
-            {1,'R'},
-            {2,'N'},
-            {3,'B'},
-            {4,'K'},
-            {5,'Q'},
-            {6,'P'},
-            {-1,'r'},
-            {-2,'n'},
-            {-3,'b'},
-            {-4,'k'},
-            {-5,'q'},
-            {-6,'p'},
-        };
+        {0,'.'},
+        {1,'R'},
+        {2,'N'},
+        {3,'B'},
+        {4,'K'},
+        {5,'Q'},
+        {6,'P'},
+        {-1,'r'},
+        {-2,'n'},
+        {-3,'b'},
+        {-4,'k'},
+        {-5,'q'},
+        {-6,'p'},
+    
+    };
+
+    unordered_map <int,int> pieces_value={
+        {0,0},
+        {1,4},
+        {2,3},
+        {3,3},
+        {4,200},
+        {5,9},
+        {6,1},
+        {-1,4},
+        {-2,3},
+        {-3,3},
+        {-4,200},
+        {-5,9},
+        {-6,1}
+    };
+
 
 };
 
-class Display{
-    //show pieces and board
-public:
-    Pieces pieces;
-    unordered_map<int,char> pieces_map=pieces.pieces_map;
-
-    void init(
-            vector<vector<int>> &board,
-            vector<int> &p1_collec, 
-            vector<int> &p2_collec 
-        ){
-
-        
-        cout<<"==> Player2: ";
-        for(int piece:p2_collec){
-            cout<<pieces_map[piece]<<" ";
-        }
-        cout<<endl;
-
-        cout<<endl;
-        for(int i=0; i<board.size(); i++){
-            cout<<8-i<<"   ";
-            for(int j=0; j<board[i].size(); j++){
-                cout<<pieces_map[board[i][j]]<<" ";
-            }
-            cout<<endl;
-        }
-        cout<<endl<<"    ";
-        for(int i=97; i<105; i++){
-            cout<<char(i)<<" ";
-        }
-        cout<<endl;
-        cout<<endl;
-
-         cout<<"==> Player1: ";
-        for(int piece:p1_collec){
-            cout<<pieces_map[piece]<<" ";
-        }
-        cout<<endl;
-        cout<<endl;
-    }
-
-    void update(
-            vector<vector<int>> &board,
-            vector<int> &p1_collec, 
-            vector<int> &p2_collec 
-        ){
-        init(board,p1_collec,p2_collec);
-    }
-
-};
 
 class Player{
     //player controls and moves
+    Pieces pieces;
+    unordered_map<int,int> pieces_value = pieces.pieces_value;
+
 public:
     void swap(int &a, int &b){
         int temp = a;
@@ -140,8 +110,77 @@ public:
 
     }
 
+    int score(vector<int> &collec){
+        int sum=0;
+        for(int piece:collec){
+            sum+=pieces_value[piece];
+        }
+        return sum;
+    }
+
+    void print_collec(vector<int> &collec,unordered_map<int,char> map){
+        for(int piece:collec){
+            cout<<map[piece]<<" ";
+        }
+        cout<<endl;
+    }
+
 };
 
+class Display{
+    //show pieces and board
+    Player player;
+    Pieces pieces;
+    unordered_map<int,char> pieces_map=pieces.pieces_map;
+    unordered_map<int,int> pieces_value = pieces.pieces_value;
+
+public:
+
+    void init(
+            vector<vector<int>> &board,
+            vector<int> &p1_collec, 
+            vector<int> &p2_collec 
+        ){
+
+        cout<<endl;
+        
+        cout<<"==> Black(p2)'s collection: ";
+        player.print_collec(p2_collec,pieces_map);
+        cout<<"==> Black(p2)'s score: ";
+        cout<<player.score(p2_collec)<<endl;
+        
+        cout<<endl;
+        for(int i=0; i<board.size(); i++){
+            cout<<8-i<<"   ";
+            for(int j=0; j<board[i].size(); j++){
+                cout<<pieces_map[board[i][j]]<<" ";
+            }
+            cout<<endl;
+        }
+        cout<<endl<<"    ";
+        for(int i=97; i<105; i++){
+            cout<<char(i)<<" ";
+        }
+        cout<<endl;
+        cout<<endl;
+
+        cout<<"==> White(p1)'s collection: ";
+        player.print_collec(p1_collec,pieces_map);
+        cout<<"White(p2)'s score: ";
+        cout<<player.score(p1_collec)<<endl;
+        cout<<endl;
+        cout<<endl;
+    }
+
+    void update(
+            vector<vector<int>> &board,
+            vector<int> &p1_collec, 
+            vector<int> &p2_collec 
+        ){
+        init(board,p1_collec,p2_collec);
+    }
+
+};
 class Game{
     // init, stop, restart, overall game flow
 public:
