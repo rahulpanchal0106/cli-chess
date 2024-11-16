@@ -166,7 +166,7 @@ public:
 
         cout<<"==> White(p1)'s collection: ";
         player.print_collec(p1_collec,pieces_map);
-        cout<<"White(p2)'s score: ";
+        cout<<"==> White(p2)'s score: ";
         cout<<player.score(p1_collec)<<endl;
         cout<<endl;
         cout<<endl;
