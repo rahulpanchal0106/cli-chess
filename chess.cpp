@@ -25,8 +25,7 @@ public:
         {-3,'b'},
         {-4,'k'},
         {-5,'q'},
-        {-6,'p'},
-    
+        {-6,'p'}
     };
 
     unordered_map <int,int> pieces_value={
@@ -44,6 +43,56 @@ public:
         {-5,9},
         {-6,1}
     };
+
+
+    bool validate_move(
+        int &start_piece, 
+        int &end_piece,
+        vector<vector<int>> &board, 
+        vector<vector<int>> &positions
+    ){
+        int x1=positions[0][0];
+        int y1=positions[0][1];
+        int x2=positions[1][0];
+        int y2=positions[1][1];
+        
+        unordered_map <int,vector<int>> pieces_allowance={
+            {0,{}},
+            {1,{}},
+            {2,{}},
+            {3,{}},
+            {4,{}},
+            {5,{}},
+            {6,{}}
+        };
+
+        vector<vector<int>> allowed_pos = {};
+
+        if(start_piece==6){
+            allowed_pos.push_back({x1-1,y1});
+        }else if(start_piece==-6){
+            allowed_pos.push_back({x1+1,y1});
+        }
+
+        for(vector<int> position : allowed_pos){ 
+            if(positions[1]==position){
+                return true;
+            }
+        }
+
+        return false;
+
+        // if(end_piece==empty){
+        //     // just a move
+
+
+
+        // }else{
+        //     // a killing move
+
+        // }
+
+    }
 
 
 };
@@ -88,7 +137,7 @@ public:
         }
     }
 
-    void make_move(
+    int make_move(
             vector<vector<int>> &board, 
             vector<vector<int>> &positions,
             vector<int> &p1_collec, 
@@ -100,14 +149,21 @@ public:
         int start_piece = board[x1][y1];
         int end_piece = board[x2][y2];
 
-        if(end_piece==empty){
-            swap(board[x1][y1],board[x2][y2]);
-            return;
+        bool allowed = pieces.validate_move(start_piece, end_piece, board, positions);
+
+        if(allowed){
+
+            if(end_piece==empty){
+                swap(board[x1][y1],board[x2][y2]);
+                return 1;
+            }
+
+            kill_piece(board[x1][y1],board[x2][y2],board,p1_collec,p2_collec);
+            return 1;
         }
 
-        kill_piece(board[x1][y1],board[x2][y2],board,p1_collec,p2_collec);
-
-
+        cout<<"~~~~~~~~~~~~~~~~~~~~~"<<endl;
+        return 0;
     }
 
     int score(vector<int> &collec){
@@ -284,9 +340,11 @@ int main(){
         // cout<<"from: "<<positions[0][0]<<" "<<positions[0][1]<<endl;
         // cout<<"to: "<<positions[1][0]<<" "<<positions[1][1]<<endl;
 
-        player.make_move(board,positions,p1_collec,p2_collec);
+        int move_made = player.make_move(board,positions,p1_collec,p2_collec);
+        if(move_made==0){
+            turns--;
+        }
         display.update(board,p1_collec,p2_collec);
-        
 
         turns++;
         
