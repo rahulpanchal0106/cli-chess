@@ -49,29 +49,46 @@ public:
         int &start_piece, 
         int &end_piece,
         vector<vector<int>> &board, 
-        vector<vector<int>> &positions
+        vector<vector<int>> &positions,
+        bool p1sturn
     ){
         int x1=positions[0][0];
         int y1=positions[0][1];
         int x2=positions[1][0];
         int y2=positions[1][1];
-        
-        unordered_map <int,vector<int>> pieces_allowance={
-            {0,{}},
-            {1,{}},
-            {2,{}},
-            {3,{}},
-            {4,{}},
-            {5,{}},
-            {6,{}}
-        };
 
         vector<vector<int>> allowed_pos = {};
 
+        if((p1sturn==true && start_piece<0) || (p1sturn==false && start_piece>0)){
+            return false;
+        }
+
         if(start_piece==6){
-            allowed_pos.push_back({x1-1,y1});
+            if(board[x1-1][y1]==empty){
+                allowed_pos.push_back({x1-1,y1});
+            }
+            if(x1==6 && board[x1-2][y1]==empty){ // starting rank
+                allowed_pos.push_back({x1-2,y1}); 
+            }
+            if(board[x1-1][y1-1]<0){
+                allowed_pos.push_back({x1-1,y1-1});
+            }
+            if(board[x1-1][y1+1]<0){
+                allowed_pos.push_back({x1-1,y1+1});
+            }
         }else if(start_piece==-6){
-            allowed_pos.push_back({x1+1,y1});
+            if(board[x1+1][y1]==empty){
+                allowed_pos.push_back({x1+1,y1});
+            }
+            if(x1==1 && board[x1+2][y1]==empty){ // starting rank
+                allowed_pos.push_back({x1+2,y1}); 
+            }
+            if(board[x1+1][y1-1]>0){
+                allowed_pos.push_back({x1+1,y1-1});
+            }
+            if(board[x1+1][y1+1]>0){
+                allowed_pos.push_back({x1+1,y1+1});
+            }
         }else if(start_piece==1){
             //up
             for(int i=x1-1; i>=0; i--){
@@ -104,9 +121,7 @@ public:
                 }
                 allowed_pos.push_back({x1,j});
                 cout<<j<<" ";
-            }
-
-            
+            }          
         }else if(start_piece==-1){
             //up
             for(int i=x1-1; i>=0; i--){
@@ -141,6 +156,43 @@ public:
                 cout<<j<<" ";
             }
 
+        }else if(start_piece==2 || start_piece==-2){
+            //up
+            if(x1-2>=0){
+                if(y1-1>=0){
+                    allowed_pos.push_back({x1-2,y1-1});
+                }
+                if(y1+1<8){
+                    allowed_pos.push_back({x1-2,y1+1});
+                }
+            }
+            //down
+            if(x1+2<8){
+                if(y1-1>=0){
+                    allowed_pos.push_back({x1+2,y1-1});
+                }
+                if(y1+1<8){
+                    allowed_pos.push_back({x1+2,y1+1});
+                }
+            }
+            //left
+            if(y1-2>=0){
+                if(x1-1>=0){
+                    allowed_pos.push_back({x1-1,y1-2});
+                }
+                if(x1+1<8){
+                    allowed_pos.push_back({x1+1,y1-2});
+                }
+            }
+            //right
+            if(y1+2<8){
+                if(x1-1>=0){
+                    allowed_pos.push_back({x1-1,y1+2});
+                }
+                if(x1+1<8){
+                    allowed_pos.push_back({x1+1,y1+2});
+                }
+            }
         }
 
         for(vector<int> position : allowed_pos){ 
@@ -150,17 +202,7 @@ public:
         }
 
         return false;
-
-        // if(end_piece==empty){
-        //     // just a move
-
-
-
-        // }else{
-        //     // a killing move
-
-        // }
-
+        
     }
 
 
@@ -202,7 +244,7 @@ public:
             start_piece=empty;
 
         }else{
-            // cout<<"*****************"<<endl;
+            cout<<"*****************"<<endl;
         }
     }
 
@@ -210,7 +252,8 @@ public:
             vector<vector<int>> &board, 
             vector<vector<int>> &positions,
             vector<int> &p1_collec, 
-            vector<int> &p2_collec
+            vector<int> &p2_collec,
+            bool p1sturn
         ){
         int x1=positions[0][0], x2=positions[1][0];
         int y1=positions[0][1], y2=positions[1][1];
@@ -218,7 +261,7 @@ public:
         int start_piece = board[x1][y1];
         int end_piece = board[x2][y2];
 
-        bool allowed = pieces.validate_move(start_piece, end_piece, board, positions);
+        bool allowed = pieces.validate_move(start_piece, end_piece, board, positions,p1sturn);
 
         if(allowed){
 
@@ -366,12 +409,6 @@ public:
     }
 
 };
-
-
-
-
-
-
 int main(){
 
     bool start = true;
@@ -400,7 +437,8 @@ int main(){
     game.init(board,p1_collec,p2_collec);
 
     while(start){
-        cout<<"Player "<<((turns%2==0)?"1":"2")<<"'s turn: ";
+        bool p1sturn = turns%2==0;
+        cout<<"Player "<<(p1sturn?"1":"2")<<"'s turn: ";
         cin>>move;
         vector<vector<int>> positions = game.move_decoder(move);
 
@@ -409,7 +447,7 @@ int main(){
         // cout<<"from: "<<positions[0][0]<<" "<<positions[0][1]<<endl;
         // cout<<"to: "<<positions[1][0]<<" "<<positions[1][1]<<endl;
 
-        int move_made = player.make_move(board,positions,p1_collec,p2_collec);
+        int move_made = player.make_move(board,positions,p1_collec,p2_collec,p1sturn);
         if(move_made==0){
             turns--;
         }
