@@ -72,6 +72,75 @@ public:
             allowed_pos.push_back({x1-1,y1});
         }else if(start_piece==-6){
             allowed_pos.push_back({x1+1,y1});
+        }else if(start_piece==1){
+            //up
+            for(int i=x1-1; i>=0; i--){
+                if(board[i+1][y1]<0 || board[i][y1]>0){
+                    break;
+                }
+                allowed_pos.push_back({i,y1});
+                cout<<i<<" ";
+            }
+            //down
+            for(int i=x1+1; i<8; i++){
+                if(board[i-1][y1]<0 || board[i][y1]>0){
+                    break;
+                }
+                allowed_pos.push_back({i,y1});
+                cout<<i<<" ";
+            }
+            //right
+            for(int j=y1+1; j<8; j++){
+                if(board[x1][j-1]<0 || board[x1][j]>0){
+                    break;
+                }
+                allowed_pos.push_back({x1,j});
+                cout<<j<<" ";
+            }
+            //left
+            for(int j=y1-1; j>=0; j--){
+                if(board[x1][j+1]<0 || board[x1][j]>0){
+                    break;
+                }
+                allowed_pos.push_back({x1,j});
+                cout<<j<<" ";
+            }
+
+            
+        }else if(start_piece==-1){
+            //up
+            for(int i=x1-1; i>=0; i--){
+                if(board[i+1][y1]>0 || board[i][y1]<0){
+                    break;
+                }
+                allowed_pos.push_back({i,y1});
+                cout<<i<<" ";
+            }
+            //down
+            for(int i=x1+1; i<8; i++){
+                if(board[i-1][y1]>0 || board[i][y1]<0){
+                    break;
+                }
+                allowed_pos.push_back({i,y1});
+                cout<<i<<" ";
+            }
+            //right
+            for(int j=y1+1; j<8; j++){
+                if(board[x1][j-1]>0 || board[x1][j]<0){
+                    break;
+                }
+                allowed_pos.push_back({x1,j});
+                cout<<j<<" ";
+            }
+            //left
+            for(int j=y1-1; j>=0; j--){
+                if(board[x1][j+1]>0 || board[x1][j]<0){
+                    break;
+                }
+                allowed_pos.push_back({x1,j});
+                cout<<j<<" ";
+            }
+
         }
 
         for(vector<int> position : allowed_pos){ 
@@ -344,6 +413,7 @@ int main(){
         if(move_made==0){
             turns--;
         }
+        
         display.update(board,p1_collec,p2_collec);
 
         turns++;
