@@ -3,9 +3,54 @@
 #include<cstdlib>
 #include<unordered_map>
 #include<locale>
+#include <fstream> // For file operations
 using namespace std;
 
-#define empty 0
+// void writeBoardToFile(const vector<vector<int>>& board) {
+//     ofstream outFile("board_state.txt");
+//     if (outFile.is_open()) {
+//         outFile << "[";
+//         for (size_t i = 0; i < board.size(); ++i) {
+//             outFile << "[";
+//             for (size_t j = 0; j < board[i].size(); ++j) {
+//                 outFile << board[i][j];
+//                 if (j != board[i].size() - 1) outFile << ",";
+//             }
+//             outFile << "]";
+//             if (i != board.size() - 1) outFile << ",";
+//         }
+//         outFile << "]";
+//         outFile.close();
+//     } else {
+//         cerr << "Error: Unable to write board state to file.\n";
+//     }
+// }
+
+void writeBoardToFile(const std::string& fen, const std::string& filename = "board_state.txt") {
+    std::ofstream file(filename);
+    if (file.is_open()) {
+        cout<<"?????????? "<<fen<<endl;
+        file << fen;
+        file.close();
+        std::cout << "FEN written to file: " << filename << std::endl;
+    } else {
+        std::cerr << "Error: Unable to open file " << filename << " for writing." << std::endl;
+    }
+}
+
+string readAIMoveFromFile() {
+    ifstream inFile("ai_move.txt");
+    string aiMove;
+    if (inFile.is_open()) {
+        getline(inFile, aiMove); // Read the move from the file
+        inFile.close();
+    } else {
+        cerr << "Error: Unable to read AI move from file.\n";
+    }
+    return aiMove;
+}
+
+
 
 class Pieces{
     //pieces logic
@@ -64,10 +109,10 @@ public:
         }
 
         if(start_piece==6){
-            if(board[x1-1][y1]==empty){
+            if(board[x1-1][y1]==0){
                 allowed_pos.push_back({x1-1,y1});
             }
-            if(x1==6 && board[x1-2][y1]==empty){ // starting rank
+            if(x1==6 && board[x1-2][y1]==0){ // starting rank
                 allowed_pos.push_back({x1-2,y1}); 
             }
             if(board[x1-1][y1-1]<0){
@@ -77,10 +122,10 @@ public:
                 allowed_pos.push_back({x1-1,y1+1});
             }
         }else if(start_piece==-6){
-            if(board[x1+1][y1]==empty){
+            if(board[x1+1][y1]==0){
                 allowed_pos.push_back({x1+1,y1});
             }
-            if(x1==1 && board[x1+2][y1]==empty){ // starting rank
+            if(x1==1 && board[x1+2][y1]==0){ // starting rank
                 allowed_pos.push_back({x1+2,y1}); 
             }
             if(board[x1+1][y1-1]>0){
@@ -200,12 +245,8 @@ public:
                 return true;
             }
         }
-
         return false;
-        
     }
-
-
 };
 
 
@@ -234,14 +275,14 @@ public:
             //white p1 kills
             p1_collec.push_back(end_piece);
             end_piece=start_piece;
-            start_piece=empty;
+            start_piece=0;
 
         }else if(start_piece<0 && end_piece>0){
 
             //black p2 kills
             p2_collec.push_back(end_piece);
             end_piece=start_piece;
-            start_piece=empty;
+            start_piece=0;
 
         }else{
             cout<<"*****************"<<endl;
@@ -265,7 +306,7 @@ public:
 
         if(allowed){
 
-            if(end_piece==empty){
+            if(end_piece==0){
                 swap(board[x1][y1],board[x2][y2]);
                 return 1;
             }
@@ -373,6 +414,9 @@ public:
 
     }
     vector<vector<int>> move_decoder(string move){ //2d4d
+
+        cout<<"====>> "<<move<<endl;
+
         string spot_start=string(1,move[0])+string(1,move[1]);//2d
         string spot_end=string(1,move[2])+string(1,move[3]);//4d
 
@@ -409,6 +453,88 @@ public:
     }
 
 };
+string getAIMove(vector<vector<int>>& gameState) {
+    // Open a pipe to the Python script
+    FILE* pipe = popen("python chessai.py", "w");
+    if (!pipe) return "Error opening pipe";
+
+    // Convert the game state to a JSON-like string
+    string gameStateJson = "[";
+    for (const auto& row : gameState) {
+        gameStateJson += "[";
+        for (size_t i = 0; i < row.size(); ++i) {
+            gameStateJson += to_string(row[i]);
+            if (i != row.size() - 1) gameStateJson += ",";
+        }
+        gameStateJson += "]";
+        if (&row != &gameState.back()) gameStateJson += ",";
+    }
+    gameStateJson += "]";
+
+    // Send the game state to the Python script
+    fputs(gameStateJson.c_str(), pipe);
+    fflush(pipe);  // Ensure it's sent immediately
+    fclose(pipe);  // Close the pipe for writing
+
+    // Open the pipe again for reading the AI move
+    pipe = popen("python chessai.py", "r");
+    if (!pipe) return "Error reading from pipe";
+
+    // Read the AI's move from the pipe
+    char buffer[128];
+    if (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+        string aiMove(buffer);  // Get the AI move as a string
+        fclose(pipe);
+        return aiMove;
+    }
+
+    fclose(pipe);
+    return "Error: No move generated";
+}
+
+
+
+std::string arr_to_fen(const std::vector<std::vector<int>>& board) {
+    // Map integer piece codes to FEN piece letters
+    std::unordered_map<int, char> piece_map = {
+        {-1, 'r'}, {-2, 'n'}, {-3, 'b'}, {-4, 'q'}, {-5, 'k'}, {-6, 'p'},
+        { 1, 'R'}, { 2, 'N'}, { 3, 'B'}, { 4, 'Q'}, { 5, 'K'}, { 6, 'P'},
+        { 0, '.'}
+    };
+
+    std::string fen;
+    for (const auto& row : board) {
+        int empty_count = 0;
+        for (int cell : row) {
+            if (cell == 0) {
+                // Increment empty square counter
+                empty_count++;
+            } else {
+                // Append empty squares count if any
+                if (empty_count > 0) {
+                    fen += std::to_string(empty_count);
+                    empty_count = 0;
+                }
+                // Append the piece character
+                fen += piece_map[cell];
+            }
+        }
+        // Append any trailing empty squares
+        if (empty_count > 0) {
+            fen += std::to_string(empty_count);
+        }
+        // Add a '/' for row separation
+        fen += '/';
+    }
+
+    // Remove the trailing '/'
+    if (!fen.empty()) {
+        fen.pop_back();
+    }
+
+    return fen;
+}
+
 int main(){
 
     bool start = true;
@@ -433,16 +559,35 @@ int main(){
     vector<int> p2_collec={};
     
 
-    system("cls");
+    // system("cls");
     game.init(board,p1_collec,p2_collec);
 
     while(start){
         bool p1sturn = turns%2==0;
-        cout<<"Player "<<(p1sturn?"1":"2")<<"'s turn: ";
-        cin>>move;
+        if (p1sturn) {
+            cout << "Player 1's turn: ";
+            cin >> move;
+        } else {
+            cout << "Player 2's turn: ";
+            
+            // Write the current board state to the file
+            string fenboard = arr_to_fen(board) + " b KQkq - 0 1";
+            cout<<">>> "<<fenboard<<endl;
+            writeBoardToFile(fenboard);
+            
+            // Call the Python script externally (simulate this by ensuring it runs after the board state is updated)
+            system("python chessai.py");
+            
+            // Read the AI move from the file
+            move = readAIMoveFromFile();
+            cout << "AI Move: " << move << endl;
+        }
+
+
+        cout<<"&&&&&&&&&&&&&777 "<<move<<endl;
         vector<vector<int>> positions = game.move_decoder(move);
 
-        system("cls");
+        // system("cls");
 
         // cout<<"from: "<<positions[0][0]<<" "<<positions[0][1]<<endl;
         // cout<<"to: "<<positions[1][0]<<" "<<positions[1][1]<<endl;
