@@ -165,13 +165,114 @@ bool Pieces::validate_move(
                 allowed_pos.push_back({x1+1,y1+2});
             }
         }
+    }else if(start_piece==3 || start_piece==-3){
+        //up-left
+        for(int i=x1-1, j=y1-1; i>=0 && j>=0; i--, j--){
+            if(board[i+1][j+1]<0 || board[i][j]>0){
+                break;
+            }
+            allowed_pos.push_back({i,j});
+        }
+        //up-right
+        for(int i=x1-1, j=y1+1; i>=0 && j<8; i--, j++){
+            if(board[i+1][j-1]<0 || board[i][j]>0){
+                break;
+            }
+            allowed_pos.push_back({i,j});
+        }
+        //down-left
+        for(int i=x1+1, j=y1-1; i<8 && j>=0; i++, j--){
+            if(board[i-1][j+1]<0 || board[i][j]>0){
+                break;
+            }
+            allowed_pos.push_back({i,j});
+        }
+        //down-right
+        for(int i=x1+1, j=y1+1; i<8 && j<8; i++, j++){
+            if(board[i-1][j-1]<0 || board[i][j]>0){
+                break;
+            }
+            allowed_pos.push_back({i,j});
+        }
+    }else if(start_piece==5 || start_piece==-5){
+        //up
+        for(int i=x1-1; i>=0; i--){
+            if(board[i+1][y1]<0 || board[i][y1]>0){
+                break;
+            }
+            allowed_pos.push_back({i,y1});
+        }
+        //down
+        for(int i=x1+1; i<8; i++){
+            if(board[i-1][y1]<0 || board[i][y1]>0){
+                break;
+            }
+            allowed_pos.push_back({i,y1});
+        }
+        //right
+        for(int j=y1+1; j<8; j++){
+            if(board[x1][j-1]<0 || board[x1][j]>0){
+                break;
+            }
+            allowed_pos.push_back({x1,j});
+        }
+        //left
+        for(int j=y1-1; j>=0; j--){
+            if(board[x1][j+1]<0 || board[x1][j]>0){
+                break;
+            }
+            allowed_pos.push_back({x1,j});
+        }
+        //up-left
+        for(int i=x1-1, j=y1-1; i>=0 && j>=0; i--, j--){
+            if(board[i+1][j+1]<0 || board[i][j]>0){
+                break;
+            }
+            allowed_pos.push_back({i,j});
+        }
+        //up-right
+        for(int i=x1-1, j=y1+1; i>=0 && j<8; i--, j++){
+            if(board[i+1][j-1]<0 || board[i][j]>0){
+                break;
+            }
+            allowed_pos.push_back({i,j});
+        }
+        //down-left
+        for(int i=x1+1, j=y1-1; i<8 && j>=0; i++, j--){
+            if(board[i-1][j+1]<0 || board[i][j]>0){
+                break;
+            }
+            allowed_pos.push_back({i,j});
+        }
+        //down-right
+        for(int i=x1+1, j=y1+1; i<8 && j<8; i++, j++){
+            if(board[i-1][j-1]<0 || board[i][j]>0){
+                break;
+            }
+            allowed_pos.push_back({i,j});
+        }
+    }else if(start_piece==4 || start_piece==-4){
+        //king moves
+        vector<vector<int>> king_moves = {
+            {x1-1, y1-1}, {x1-1, y1}, {x1-1, y1+1},
+            {x1, y1-1}, {x1, y1+1},
+            {x1+1, y1-1}, {x1+1, y1}, {x1+1, y1+1}
+        };
+        for(auto move : king_moves){
+            int x = move[0];
+            int y = move[1];
+            if(x >= 0 && x < 8 && y >= 0 && y < 8){
+                if((p1sturn && board[x][y] <= 0) || (!p1sturn && board[x][y] >= 0)){
+                    allowed_pos.push_back({x, y});
+                }
+            }
+        }
     }
 
     for(vector<int> position : allowed_pos){ 
         if(positions[1]==position){
             return true;
         }
-        }
+    }
     return false;
 }
-

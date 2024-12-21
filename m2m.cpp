@@ -50,44 +50,59 @@ vector<vector<int>> deserializeBoard(const string& data) {
 
 void Lan::startServer(SOCKET &serverSocket, sockaddr_in &serverAddr, sockaddr_in &clientAddr,vector<vector<int>> &board, int &turns, string &move,vector<int> &p1_collec,vector<int> &p2_collec) {
     listen(serverSocket, 1);
-    std::cout << "waiting for opponent to join..." << std::endl;
+    std::cout << "waiting for opponent(black) to join..." << std::endl;
     
     int clientAddrSize = sizeof(clientAddr);
     SOCKET clientSocket = accept(serverSocket, (sockaddr*)&clientAddr, &clientAddrSize);
 
     if (clientSocket != INVALID_SOCKET) {
-        std::cout << "opponent has joined the game!" << std::endl;
+        std::cout << "opponent(black) has joined the game!" << std::endl;
 
         char buffer[MAX_BUFFER_SIZE];
         string server_message;
         int bytesReceived;
         
-        while (true) {
-            memset(buffer, 0, MAX_BUFFER_SIZE);
-            
-            // Receive message from client
-            bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
-            if (bytesReceived > 0) {
-                buffer[bytesReceived] = '\0';
-                std::cout << "opponent's move: " << buffer << std::endl;
-                board=deserializeBoard(buffer);
-                display.update(board,p1_collec,p2_collec);
-                
-                // Get server's response
-                std::cout << "Your Move: ";
-                getline(std::cin, server_message);
-                move = server_message;
-                vector<vector<int>> positions = game.move_decoder(move);
-                int move_made = player.make_move(board,positions,p1_collec,p2_collec,true);
-                display.update(board,p1_collec,p2_collec);
-                // Send response to client
-                server_message = serializeBoard(board);
-                send(clientSocket, server_message.c_str(), server_message.length(), 0);
+       while (true) {
+    memset(buffer, 0, MAX_BUFFER_SIZE);
+    
+    // Receive message from client
+    bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
+    if (bytesReceived > 0) {
+        buffer[bytesReceived] = '\0';
+        board = deserializeBoard(buffer);
+        system("cls");
+        display.update(board, p1_collec, p2_collec);
+
+        // Get server's response
+        while (true) {  // Loop until a valid move is made
+            std::cout << "Enter Your Move (White/Caps): ";
+            getline(std::cin, server_message);
+            move = server_message;
+            vector<vector<int>> positions = game.move_decoder(move);
+            system("cls");
+
+            int move_made = player.make_move(board, positions, p1_collec, p2_collec, true);
+            if (move_made != 0) {
+                turns--;
+                display.update(board, p1_collec, p2_collec);
+                break;  // Exit the loop if the move is valid
             } else {
-                std::cout << "opponent disconnected." << std::endl;
-                break;
+                display.update(board, p1_collec, p2_collec);
+                std::cout << "Invalid move! Try again." << std::endl;
             }
         }
+
+        // Send response to client
+        server_message = serializeBoard(board);
+        send(clientSocket, server_message.c_str(), server_message.length(), 0);
+        std::cout << "Waiting for black to make a move..." << std::endl;
+        turns++;
+    } else {
+        std::cout << "Opponent disconnected." << std::endl;
+        break;
+    }
+}
+
         closesocket(clientSocket);
     }
 }
@@ -98,7 +113,7 @@ void Lan::startClient(SOCKET &clientSocket, sockaddr_in &serverAddr, vector<vect
         return;
     }
 
-    std::cout << "Connected to opponent!" << std::endl;
+    std::cout << "Joined opponent's(white) room!" << std::endl;
 
     char buffer[MAX_BUFFER_SIZE];
     string message;
@@ -107,39 +122,47 @@ void Lan::startClient(SOCKET &clientSocket, sockaddr_in &serverAddr, vector<vect
     std::cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
     while (true) {
-        // Clear buffers
-        memset(buffer, 0, MAX_BUFFER_SIZE);
-        // memset(message, 0, MAX_BUFFER_SIZE);
-        
-        // Get message from user
-        std::cout << "Your move: ";
+    // Clear buffers
+    memset(buffer, 0, MAX_BUFFER_SIZE);
+
+    // Get message from user
+    while (true) {  // Loop until a valid move is made
+        std::cout << "Enter Your Move (Black/Lowercase): ";
         getline(std::cin, message);
         move = message;
         vector<vector<int>> positions = game.move_decoder(move);
-        int move_made = player.make_move(board,positions,p1_collec,p2_collec,false);
-        display.update(board,p1_collec,p2_collec);
-        
-        if (message.length() == 0) {
-            std::cout << "Exiting..." << std::endl;
-            break;
-        }
+        system("cls");
 
-        // Send message to server
-        message = serializeBoard(board);
-        send(clientSocket, message.c_str(), message.length(), 0);
-        
-        // Receive server's response
-        int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
-        if (bytesReceived > 0) {
-            buffer[bytesReceived] = '\0';
-            std::cout << "opponent's move: " << buffer << std::endl;
-            board=deserializeBoard(buffer);
-            display.update(board,p1_collec,p2_collec);
+        int move_made = player.make_move(board, positions, p1_collec, p2_collec, false);
+        if (move_made != 0) {
+            turns--;
+            display.update(board, p1_collec, p2_collec);
+            break;  // Exit the loop if the move is valid
         } else {
-            std::cout << "opponent disconnected." << std::endl;
-            break;
+            display.update(board, p1_collec, p2_collec);
+            std::cout << "Invalid move! Try again." << std::endl;
         }
     }
+
+    // Send message to server
+    message = serializeBoard(board);
+    send(clientSocket, message.c_str(), message.length(), 0);
+    std::cout << "Waiting for white to make a move..." << std::endl;
+    turns++;
+
+    // Receive server's response
+    int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
+    if (bytesReceived > 0) {
+        buffer[bytesReceived] = '\0';
+        board = deserializeBoard(buffer);
+        system("cls");
+        display.update(board, p1_collec, p2_collec);
+    } else {
+        std::cout << "Opponent disconnected." << std::endl;
+        break;
+    }
+}
+
 }
 
 int Lan::initiate(vector<vector<int>> &board, int &turns, string &move,vector<int> &p1_collec,vector<int> &p2_collec) {
@@ -162,7 +185,7 @@ int Lan::initiate(vector<vector<int>> &board, int &turns, string &move,vector<in
     addr.sin_port = htons(PORT);
     addr.sin_addr.s_addr = INADDR_ANY;
 
-    std::cout << "Choose your role: 1 for Hosting a Game, 2 for Joining a Game: ";
+    std::cout << "Choose your role:\n     1 for Hosting a Game (As White)\n     2 for Joining a Game (As Black)\n---> ";
     int role;
     std::cin >> role;
     std::cin.ignore();
@@ -177,7 +200,7 @@ int Lan::initiate(vector<vector<int>> &board, int &turns, string &move,vector<in
         startServer(socketHandle, addr, addr,board, turns, move,p1_collec,p2_collec);
     } else if (role == 2) {
         // Client Role
-        std::cout << "Enter server IP address: ";
+        std::cout << "Enter IP address of your opponent: ";
         std::string serverIp;
         std::cin >> serverIp;
         addr.sin_addr.s_addr = inet_addr(serverIp.c_str()); 

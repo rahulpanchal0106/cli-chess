@@ -34,6 +34,7 @@ public:
         int turns,
         string move
     );
+    void help();
 };
 
 #endif

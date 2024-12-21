@@ -63,17 +63,7 @@ int main(){
             move
         );
     }else if(menu.game_mode==3){
-        //ai opponent
-        cout<<"Plying aginst AI Opponent"<<endl;
-        game.init(board,p1_collec,p2_collec);
-        menu.aiopponent(
-            board,
-            p1_collec,
-            p2_collec,
-            start,
-            turns,
-            move
-        );
+        menu.help();
     }
     system("pause");
     return 0;
