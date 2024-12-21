@@ -47,5 +47,6 @@ User Manual:
 Enjoy the game and have fun!
 
 
-Video Demo
+Video Demo:
+[Watch video on youtube](https://www.youtube.com/embed/7AOIWmWeAPM?si=V0vvEOgXuqyJtxRe)
 
