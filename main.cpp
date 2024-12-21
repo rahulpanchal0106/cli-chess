@@ -39,7 +39,7 @@ int main(){
     
 
     if(menu.game_mode==1){
-        cout<<"Plying Pass n Play mode"<<endl;
+        cout<<"Playing Pass n Play mode"<<endl;
         game.init(board,p1_collec,p2_collec);
         //pass n play
         menu.passnplay(
@@ -52,7 +52,7 @@ int main(){
         );
     }else if(menu.game_mode==2){
         //lan multiplayer
-        cout<<"Plying LAN Multiplayer mode"<<endl;
+        cout<<"Playing LAN Multiplayer mode"<<endl;
         game.init(board,p1_collec,p2_collec);
         menu.lanmultiplayer(
             board,

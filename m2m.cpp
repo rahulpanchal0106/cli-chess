@@ -200,7 +200,7 @@ int Lan::initiate(vector<vector<int>> &board, int &turns, string &move,vector<in
         startServer(socketHandle, addr, addr,board, turns, move,p1_collec,p2_collec);
     } else if (role == 2) {
         // Client Role
-        std::cout << "Enter IP address of your opponent: ";
+        std::cout << "Enter IP address of your opponent(IPv4): ";
         std::string serverIp;
         std::cin >> serverIp;
         addr.sin_addr.s_addr = inet_addr(serverIp.c_str()); 
