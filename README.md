@@ -2,14 +2,19 @@ Welcome to the CLI-Chess Project!
 
 CLI Chess is a command-line interface chess game written in C++. It offers different game modes including Pass n Play And LAN Multiplayer. 
 
-Setting Up The Game:
-  1. Clone The Github Repo Using The Command:
-     
-  2. Set Path In The Terminal Where The Repo Is Cloned
-     
-  3. Compile The Code Using The Command:
+Requirements:
+* mingw gcc (compiler): GCC 6.3.0
+* make sure you have installed ```ws2_32.lib``` with mingw. 
+* os: windows 11
 
-  4. Run The executable File Generated In The Directory Using The Command:
+Setting Up The Game:
+  1. Clone The Github Repo Using The Command: ```git clone https://github.com/rahulpanchal0106/cli-chess.git```
+     
+  2. Navigate to the repo directory: ```cd cli-chess```
+     
+  3. Compile The Code Using The Command: ```g++ main.cpp gameflow.cpp display.cpp player.cpp pieceslogic.cpp menu.cpp menu.h m2m.cpp m2m.h -o chess_game -lws2_32``` 
+    
+  5. Run The executable File Generated In The Directory Using The Command: ``` ./chess_game ``` 
 
 User Manual:
   1. Game Modes:<br>
