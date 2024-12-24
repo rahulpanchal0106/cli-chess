@@ -3,7 +3,8 @@
 #include<cstdlib>
 #include<unordered_map>
 #include<locale>
-#include <fstream> // For file operations
+#include <fstream> 
+#include<headers/pieceslogic.h>
 using namespace std;
 
 // void writeBoardToFile(const vector<vector<int>>& board) {
